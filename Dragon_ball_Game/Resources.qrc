@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Recursos/backgraunds/BACKGRAUND NIVEL 1.png</file>
+        <file>Recursos/backgraunds/BACKGRAUND NIVEL 2.png</file>
+        <file>Recursos/backgraunds/BACKGRAUND NIVEL 3.png</file>
+        <file>Recursos/fuente/Saiyan-Sans.ttf</file>
+        <file>Recursos/titulo/dragonball_logo.png</file>
+    </qresource>
+</RCC>
