@@ -10,24 +10,50 @@ QT += multimedia
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    Burbuja.cpp \
+    CajaLeche.cpp \
+    Caparazon.cpp \
+    EsferaDragon.cpp \
+    Fisica.cpp \
+    Goku.cpp \
+    Item.cpp \
+    Juego.cpp \
+    Nivel.cpp \
     Nivel1.cpp \
     Nivel2.cpp \
     Nivel3.cpp \
-    Niveles.cpp \
-    VentanaJuego.cpp \
-    main.cpp \
-    mainwindow.cpp
+    ObjetoFisico.cpp \
+    Obstaculo.cpp \
+    PanelInformacion.cpp \
+    Personaje.cpp \
+    Plataforma.cpp \
+    VentanaEmergente.cpp \
+    VentanaMenuPrincipal.cpp \
+    main.cpp
 
 HEADERS += \
+    Burbuja.h \
+    CajaLeche.h \
+    Caparazon.h \
+    EsferaDragon.h \
+    Fisica.h \
+    Goku.h \
+    Item.h \
+    Juego.h \
+    Nivel.h \
     Nivel1.h \
     Nivel2.h \
     Nivel3.h \
-    Niveles.h \
-    VentanaJuego.h \
-    mainwindow.h
+    ObjetoFisico.h \
+    Obstaculo.h \
+    PanelInformacion.h \
+    Personaje.h \
+    Plataforma.h \
+    VentanaEmergente.h \
+    VentanaMenuPrincipal.h
 
 FORMS += \
-    mainwindow.ui
+    Juego.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

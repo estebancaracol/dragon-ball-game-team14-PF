@@ -5,5 +5,43 @@
         <file>Recursos/backgraunds/BACKGRAUND NIVEL 3.png</file>
         <file>Recursos/fuente/Saiyan-Sans.ttf</file>
         <file>Recursos/titulo/dragonball_logo.png</file>
+        <file>Recursos/backgraunds/fondo_emergente.png</file>
+        <file>Recursos/backgraunds/fondo_panel.png</file>
+        <file>Recursos/backgraunds/img_game_over.png</file>
+        <file>Recursos/objetos/burbuja.png</file>
+        <file>Recursos/objetos/EdelDragon.png</file>
+        <file>Recursos/objetos/plataforma.png</file>
+        <file>Recursos/personaje/goku.png</file>
+        <file>Recursos/objetos/CajaLeche.png</file>
+        <file>Recursos/objetos/DragonBallLogo.png</file>
+        <file>Recursos/objetos/Escombro.png</file>
+        <file>Recursos/objetos/Objetivo.png</file>
+        <file>Recursos/objetos/plataformaDestruible.png</file>
+        <file>Recursos/objetos/Tiburon.png</file>
+        <file>Recursos/goku1.png</file>
+        <file>Recursos/goku2.png</file>
+        <file>Recursos/goku3.png</file>
+        <file>Recursos/goku4.png</file>
+        <file>Recursos/goku5.png</file>
+        <file>Recursos/goku6.png</file>
+        <file>Recursos/goku7.png</file>
+        <file>Recursos/goku8.png</file>
+        <file>Recursos/goku9.png</file>
+        <file>Recursos/goku10.png</file>
+        <file>Recursos/goku11.png</file>
+        <file>Recursos/goku12.png</file>
+        <file>Recursos/goku13.png</file>
+        <file>Recursos/goku14.png</file>
+        <file>Recursos/goku15.png</file>
+        <file>Recursos/goku16.png</file>
+        <file>Recursos/gokulanzamiento1.png</file>
+        <file>Recursos/gokulanzamiento2.png</file>
+        <file>Recursos/gokulanzamiento3.png</file>
+        <file>Recursos/gokunadando1.png</file>
+        <file>Recursos/gokunadando2.png</file>
+        <file>Recursos/gokunadando3.png</file>
+        <file>Recursos/gokunadando4.png</file>
+        <file>Recursos/gokunadando5.png</file>
+        <file>Recursos/gokunadando6.png</file>
     </qresource>
 </RCC>
