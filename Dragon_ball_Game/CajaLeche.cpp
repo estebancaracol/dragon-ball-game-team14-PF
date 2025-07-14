@@ -4,10 +4,9 @@
 CajaLeche::CajaLeche(short cantidadTiros)
     : cantidadTiros(cantidadTiros)
 {
-    QPixmap sprite = QPixmap(":/Recursos/objetos/burbuja.png").scaled(35, 35, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    QPixmap sprite = QPixmap(":/Recursos/objetos/CajaLeche.png").scaled(40, 40, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     setPixmap(sprite);
-    spriteOriginal = sprite; // Guardar sprite original para efectos
-    // Almacenar como property para acceso externo
+    spriteOriginal = sprite;
     setProperty("cantidadTiros", cantidadTiros);
 }
 

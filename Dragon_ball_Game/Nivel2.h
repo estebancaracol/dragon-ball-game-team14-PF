@@ -6,6 +6,8 @@
 #include "Goku.h"
 #include "Obstaculo.h"
 
+class Juego;
+
 class Nivel2 : public Nivel
 {
     Q_OBJECT
@@ -19,6 +21,10 @@ public:
     int getCantidadObjetivosEntregados() const;
     void incrementarObjetivosEntregados();
     bool verificarObjetivoCompleto() override;
+
+    // NUEVO: Setter y getter del puntero a Juego
+    void setJuego(Juego* juego) { this->juego = juego; }
+    Juego* getJuego() const { return juego; }
 
 protected:
     // ========== MÉTODOS PROTEGIDOS (OVERRIDES) ==========
@@ -51,6 +57,9 @@ private:
     int objetivosEntregados = 0;
     int indiceObjetivoActivo = -1;
     bool emitidoObjetivoCumplido = false;
+
+    // NUEVO: Guarda referencia segura a Juego
+    Juego* juego = nullptr;
 };
 
 #endif // NIVEL2_H

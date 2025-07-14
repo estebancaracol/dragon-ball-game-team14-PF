@@ -46,6 +46,8 @@ public:
     void disminuirFuerzaTiro();
     void aumentarFuerzaTiro();
     bool trayectoriaEstaVisible() const;
+    void actualizarTrayectoria(bool parabolico);
+    void toggleTrayectoria(bool parabolico);
 
     // ========== ITEMS Y RECOLECCIÓN ==========
     void recolectar(Item* item);
@@ -123,6 +125,7 @@ private:
     // ========== TRAYECTORIA ==========
     QList<QGraphicsEllipseItem*> trayectoriaPreview;
     QPointF posicionBaseTrayectoria;
+    bool trayectoriaVisible = false;  // Bandera para controlar el estado de la trayectoria
 };
 
 #endif // GOKU_H

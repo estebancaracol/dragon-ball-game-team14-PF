@@ -75,6 +75,14 @@ private:
     // ========== ESTADO DEL JUEGO ==========
     bool modoHistoria = false;
     bool gameOver = false;
+
+    // Método para verificar si una tecla está permitida en el nivel actual
+    bool esTeclaPermitidaEnNivel(int key, TipoNivel tipo);
+
+    // Métodos para procesar teclas específicas por nivel
+    void procesarTeclasNivelUno(int key, Goku* goku);
+    void procesarTeclasNivelDos(int key, Goku* goku);
+    void procesarTeclasNivelTres(int key, Goku* goku);
 };
 
 #endif // JUEGO_H

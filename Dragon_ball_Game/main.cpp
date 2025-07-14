@@ -1,6 +1,7 @@
 #include <QApplication>
 #include <QIcon>
 #include <QDebug>
+#include "AudioManager.h"
 
 #include "Juego.h"
 

@@ -9,12 +9,13 @@ class EsferaDragon : public Item
 {
     Q_OBJECT
 public:
-    explicit EsferaDragon(short puntaje = 100);
+    explicit EsferaDragon(short recolectadas = 1, short TotalRecolectar = 7);
 
     void efecto() override;
 
 private:
-    short puntaje;
+    short recolectadas;
+    short TotalRecolectar;
 };
 
 #endif // ESFERADRAGON_H

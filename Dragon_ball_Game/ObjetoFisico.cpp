@@ -54,7 +54,7 @@ void ObjetoFisico::verificarColisiones()
                     if (Goku* goku = dynamic_cast<Goku*>(nivel->getPersonaje())) {
                         goku->recolectar(item);
                         item->setRecolectado(true);
-                        if (Juego* juego = dynamic_cast<Juego*>(nivel->parent())) {
+                        if (Juego* juego = nivel->getJuego()) {
                             juego->actualizarPanelInfo();
                         }
                         nivel->verificarObjetivoCompleto();
@@ -79,7 +79,7 @@ void ObjetoFisico::verificarColisiones()
                 obj->setEstado(EstadoObjetivo::Entregado);
                 if (Nivel2* nivel = dynamic_cast<Nivel2*>(scene())) {
                     nivel->incrementarObjetivosEntregados();
-                    if (Juego* juego = dynamic_cast<Juego*>(nivel->parent())) {
+                    if (Juego* juego = nivel->getJuego()) {
                         juego->actualizarPanelInfo();
                     }
                 }

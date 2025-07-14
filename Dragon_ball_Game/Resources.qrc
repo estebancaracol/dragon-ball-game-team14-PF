@@ -43,5 +43,19 @@
         <file>Recursos/gokunadando4.png</file>
         <file>Recursos/gokunadando5.png</file>
         <file>Recursos/gokunadando6.png</file>
+        <file>Recursos/Audio/burbuja.wav</file>
+        <file>Recursos/Audio/caja_leche.wav</file>
+        <file>Recursos/Audio/click_menu.wav</file>
+        <file>Recursos/Audio/disparo.wav</file>
+        <file>Recursos/Audio/esfera_dragon.wav</file>
+        <file>Recursos/Audio/game_over.wav</file>
+        <file>Recursos/Audio/hover_menu.wav</file>
+        <file>Recursos/Audio/juego_terminado.wav</file>
+        <file>Recursos/Audio/nado.wav</file>
+        <file>Recursos/Audio/nivel_completado.wav</file>
+        <file>Recursos/Audio/salto.wav</file>
+        <file>Recursos/Audio/transicion.wav</file>
+        <file>Recursos/Audio/musica_fondo.mp3</file>
+        <file>Recursos/Audio/musica_fondo.wav</file>
     </qresource>
 </RCC>

@@ -322,12 +322,6 @@ void Nivel2::actualizarFisica()
         }
     }
 
-    if (goku->y() > limiteInferiorY) {
-        goku->setVidas(goku->getVidas() - 1);
-        emit vidasAgotadas();
-        reiniciarNivel();
-    }
-
     if (verificarObjetivoCompleto()) {
         if (!emitidoObjetivoCumplido) {
             emitidoObjetivoCumplido = true;
@@ -336,6 +330,15 @@ void Nivel2::actualizarFisica()
         }
     }
 
+    if (goku->y() > limiteInferiorY) {
+        goku->setVidas(goku->getVidas() - 1);
+
+        if (goku->getVidas() <= 0) {
+            emit vidasAgotadas();
+        } else {
+            reiniciarNivel();
+        }
+    }
 }
 
 // ============================================

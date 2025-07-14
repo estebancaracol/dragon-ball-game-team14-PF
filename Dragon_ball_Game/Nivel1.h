@@ -54,7 +54,6 @@ private:
     // ========== GESTIÓN DE OBJETIVOS ==========
     bool objetivoCompletado = false;
     bool plataformasDetenidas = false;
-    bool bugReinicioAnulado = false;
 };
 
 #endif // NIVEL1_H

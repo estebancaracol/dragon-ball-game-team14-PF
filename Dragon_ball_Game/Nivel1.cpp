@@ -153,9 +153,14 @@ void Nivel1::actualizarFisica()
 
     if (goku->y() > limiteInferiorY) {
         goku->setVidas(goku->getVidas() - 1);
-        emit vidasAgotadas();
-        reiniciarNivel();
+
+        if (goku->getVidas() <= 0) {
+            emit vidasAgotadas();
+        } else {
+            reiniciarNivel();
+        }
     }
+
 }
 
 // ============================================

@@ -4,7 +4,7 @@
 Burbuja::Burbuja(short vidasExtra)
     : vidasExtra(vidasExtra)
 {
-    setPixmap(QPixmap(":/Recursos/items/burbuja.png").scaled(35, 35, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    setPixmap(QPixmap(":/Recursos/objetos/burbuja.png").scaled(35, 35, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }
 
 void Burbuja::efecto()

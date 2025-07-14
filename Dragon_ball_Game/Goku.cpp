@@ -4,6 +4,7 @@
 #include "Burbuja.h"
 #include "ObjetoFisico.h"
 #include "Fisica.h"
+#include "AudioManager.h"
 
 #include <QDebug>
 #include <QBrush>
@@ -333,6 +334,9 @@ void Goku::disparar(bool parabolico)
         return;
     }
 
+    // Reproducir sonido de disparo
+    AudioManager::instancia()->reproducirSonido(AudioManager::DISPARO);
+
     // Crear objeto físico como proyectil
     ObjetoFisico* proyectil = new ObjetoFisico(true);  // 'true' para que se configure como proyectil
     QPointF inicio = mapToScene(boundingRect().center());
@@ -373,11 +377,11 @@ void Goku::mostrarTrayectoria(bool parabolico)
     float gravedad = 0.5f;
     float dt = 0.1f;
     float t = 0.0f;
-
     QRectF limites = scene()->sceneRect();
 
     // Solo crear un punto cada "saltos" de tiempo visual
     const int intervaloVisual = 10;  // Cada cuántos pasos dibujar el punto
+
     for (int i = 0; i < 500; ++i) {
         float x = origen.x() + vx * t;
         float y = origen.y() + vy * t + (parabolico ? 0.5f * gravedad * t * t : 0.0f);
@@ -397,13 +401,37 @@ void Goku::mostrarTrayectoria(bool parabolico)
 
         t += dt;
     }
+
+    trayectoriaVisible = true;  // Marcar como visible
 }
 
 void Goku::limpiarTrayectoria()
 {
-    for (auto* punto : trayectoriaPreview)
-        scene()->removeItem(punto);
+    for (auto* punto : trayectoriaPreview) {
+        if (scene()) {
+            scene()->removeItem(punto);
+        }
+        delete punto;  // Importante: liberar memoria
+    }
     trayectoriaPreview.clear();
+    trayectoriaVisible = false;  // Marcar como no visible
+}
+
+void Goku::actualizarTrayectoria(bool parabolico)
+{
+    if (trayectoriaVisible) {
+        limpiarTrayectoria();
+        mostrarTrayectoria(parabolico);
+    }
+}
+
+void Goku::toggleTrayectoria(bool parabolico)
+{
+    if (trayectoriaVisible) {
+        limpiarTrayectoria();
+    } else {
+        mostrarTrayectoria(parabolico);
+    }
 }
 
 // ============================================
@@ -415,6 +443,9 @@ void Goku::activarNado() {
         enModoNado = true;
         setEnSalto(false);
         setVelocidadSalto(0);
+
+        // Reproducir sonido de entrada al agua
+        AudioManager::instancia()->reproducirSonido(AudioManager::NADO, 0.7f);
 
         // Ajustar estado actual si es necesario
         if (estadoActual == CaminandoDerecha) {
@@ -445,6 +476,16 @@ void Goku::desactivarNado() {
 void Goku::nadar(float dx, float dy) {
     if (!enModoNado) return;
 
+    // Reproducir sonido de nado solo si hay movimiento significativo
+    if (abs(dx) > 0.1f || abs(dy) > 0.1f) {
+        // Reproducir sonido de nado con volumen bajo para evitar saturación
+        static int contadorNado = 0;
+        contadorNado++;
+        if (contadorNado % 10 == 0) { // Solo cada 10 movimientos
+            AudioManager::instancia()->reproducirSonido(AudioManager::NADO, 0.3f);
+        }
+    }
+
     // Actualizar dirección si hay movimiento horizontal
     if (dx < 0) {
         ultimaDireccion = -1;
@@ -468,6 +509,9 @@ void Goku::saltar() {
         float fuerzaSalto = -10.0f * caparazon.getFactorSalto();
         setVelocidadSalto(fuerzaSalto);
         setEnSalto(true);
+
+        // Reproducir sonido de salto
+        AudioManager::instancia()->reproducirSonido(AudioManager::SALTO);
     }
 }
 
@@ -483,9 +527,11 @@ void Goku::recolectar(Item* item)
 
         if (auto* esfera = dynamic_cast<EsferaDragon*>(item)) {
             esferasRecolectadas++;
+            AudioManager::instancia()->reproducirSonido(AudioManager::ESFERA_DRAGON);
             qDebug() << "[Goku] Esfera del Dragon recolectada. Total:" << esferasRecolectadas;
         }
         else if (CajaLeche* caja = dynamic_cast<CajaLeche*>(item)) {
+            AudioManager::instancia()->reproducirSonido(AudioManager::CAJA_LECHE);
             if (caja->property("cantidadTiros").toInt() == 5) {
                 cajaLecheObligatoriaRecolectada = true;
                 aumentarTiros(5);
@@ -497,6 +543,7 @@ void Goku::recolectar(Item* item)
         }
         else if (auto* burbuja = dynamic_cast<Burbuja*>(item)) {
             burbujasRecolectadas++;
+            AudioManager::instancia()->reproducirSonido(AudioManager::BURBUJA);
         }
 
         qDebug() << "[Goku] Item recolectado.";
@@ -507,34 +554,55 @@ void Goku::recolectar(Item* item)
 // SISTEMA DE INVULNERABILIDAD
 // ============================================
 
+// void Goku::activarInvulnerabilidad(int ms)
+// {
+//     if (invulnerable) return;
+
+//     invulnerable = true;
+
+//     if (!timerInvulnerabilidad)
+//         timerInvulnerabilidad = new QTimer(this);
+
+//     int intervalo = 200;
+//     int repeticiones = ms / intervalo;
+//     auto contador = std::make_shared<int>(0);
+
+//     disconnect(timerInvulnerabilidad);
+
+//     connect(timerInvulnerabilidad, &QTimer::timeout, this, [=]() mutable {
+//         qreal nuevaOpacidad = (opacity() == 1.0) ? 0.5 : 1.0;
+//         setOpacity(nuevaOpacidad);
+
+//         (*contador)++;
+//         if (*contador >= repeticiones) {
+//             timerInvulnerabilidad->stop();
+//             setOpacity(1.0);
+//             invulnerable = false;
+//         }
+//     });
+
+//     timerInvulnerabilidad->start(intervalo);
+// }
+
 void Goku::activarInvulnerabilidad(int ms)
 {
     if (invulnerable) return;
 
     invulnerable = true;
+    setOpacity(0.5);
 
     if (!timerInvulnerabilidad)
         timerInvulnerabilidad = new QTimer(this);
 
-    int intervalo = 200;
-    int repeticiones = ms / intervalo;
-    auto contador = std::make_shared<int>(0);
+    disconnect(timerInvulnerabilidad, nullptr, nullptr, nullptr);
 
-    disconnect(timerInvulnerabilidad);
-
-    connect(timerInvulnerabilidad, &QTimer::timeout, this, [=]() mutable {
-        qreal nuevaOpacidad = (opacity() == 1.0) ? 0.5 : 1.0;
-        setOpacity(nuevaOpacidad);
-
-        (*contador)++;
-        if (*contador >= repeticiones) {
-            timerInvulnerabilidad->stop();
-            setOpacity(1.0);
-            invulnerable = false;
-        }
+    connect(timerInvulnerabilidad, &QTimer::timeout, this, [=]() {
+        timerInvulnerabilidad->stop();
+        setOpacity(1.0);
+        invulnerable = false;
     });
 
-    timerInvulnerabilidad->start(intervalo);
+    timerInvulnerabilidad->start(ms);
 }
 
 // ============================================

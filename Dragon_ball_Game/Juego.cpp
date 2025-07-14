@@ -1,4 +1,5 @@
 #include "Juego.h"
+#include "AudioManager.h"
 #include "Nivel1.h"
 #include "Nivel2.h"
 #include "Nivel3.h"
@@ -53,6 +54,21 @@ Juego::Juego(QWidget *parent)
     // Configuración general
     setFocusPolicy(Qt::StrongFocus);
     setFocus();
+
+    // ===== INICIALIZAR AUDIO Y MÚSICA DE FONDO =====
+    // Inicializar el sistema de audio
+    AudioManager* audioManager = AudioManager::instancia();
+
+    // Cargar y reproducir música de fondo
+    audioManager->cargarMusicaFondo(":/Recursos/Audio/musica_fondo.wav");
+
+    // Configurar volumen bajo para que no interfiera
+    audioManager->setVolumenMusica(0.50f); // 50% del volumen máximo
+
+    // Iniciar la música de fondo en loop
+    audioManager->reproducirMusica(true);
+
+    qDebug() << "[Juego] Juego inicializado con música de fondo";
 }
 
 void Juego::conectarSenales()
@@ -68,29 +84,35 @@ void Juego::conectarSenales()
 // ============================================
 
 void Juego::mostrarNivel1() {
+    AudioManager::instancia()->reproducirSonido(AudioManager::CLICK_MENU);
     modoHistoria = false;
     cargarNivel(TipoNivel::UNO);
 }
 
 void Juego::mostrarNivel2() {
+    AudioManager::instancia()->reproducirSonido(AudioManager::CLICK_MENU);
     modoHistoria = false;
     cargarNivel(TipoNivel::DOS);
 }
 
 void Juego::mostrarNivel3() {
+    AudioManager::instancia()->reproducirSonido(AudioManager::CLICK_MENU);
     modoHistoria = false;
     cargarNivel(TipoNivel::TRES);
 }
 
 void Juego::iniciarJuegoCompleto() {
+    AudioManager::instancia()->reproducirSonido(AudioManager::CLICK_MENU);
     modoHistoria = true;
     cargarNivel(TipoNivel::UNO);
 }
 
 void Juego::volverAlMenu() {
+    AudioManager::instancia()->reproducirSonido(AudioManager::CLICK_MENU);
     timerActualizacionPanel->stop();
     panelInfo->pausarTiempo();
     eliminarNivelActual();
+    setGameOver(false);
     layoutPrincipal->setCurrentWidget(menu);
 
     // Reiniciar progreso historia
@@ -106,6 +128,9 @@ void Juego::volverAlMenu() {
 
 void Juego::cargarNivel(TipoNivel tipo)
 {
+    // Efecto de transición
+    AudioManager::instancia()->reproducirSonido(AudioManager::TRANSICION_NIVEL);
+
     eliminarNivelActual();
 
     // Crear el nivel correspondiente
@@ -119,6 +144,7 @@ void Juego::cargarNivel(TipoNivel tipo)
         break;
     case TipoNivel::DOS:
         nivelActual = new Nivel2(this);
+        static_cast<Nivel2*>(nivelActual)->setJuego(this);
         connect(nivelActual, &Nivel::reinicioCompletado, this, [this]() {
             qDebug() << "[Juego] Reinicio completado. Game Over desactivado.";
             this->setGameOver(false);
@@ -173,22 +199,18 @@ void Juego::cargarNivel(TipoNivel tipo)
 void Juego::eliminarNivelActual()
 {
     if (nivelActual) {
-        nivelActual->deleteLater();
+        vistaNivel->setScene(nullptr);
+        delete nivelActual;
         nivelActual = nullptr;
     }
 }
+
 
 // ============================================
 // MANEJO DE EVENTOS DE TECLADO
 // ============================================
 
 void Juego::keyPressEvent(QKeyEvent* event) {
-    // Evitar eventos repetidos
-    // if (event->isAutoRepeat()) {
-    //     qDebug() << "[KEY PRESS] Ignorando auto-repeat para tecla:" << event->key();
-    //     return;
-    // }
-
     qDebug() << "[KEY PRESS] Tecla presionada:" << event->key();
 
     if (isGameOver()) {
@@ -203,93 +225,34 @@ void Juego::keyPressEvent(QKeyEvent* event) {
 
     TipoNivel tipo = nivelActual->getTipo();
 
-    // AGREGAR TECLA PARA MOVIMIENTO
+    // Verificar si la tecla está permitida en este nivel
+    if (!esTeclaPermitidaEnNivel(event->key(), tipo)) {
+        qDebug() << "[KEY PRESS] Tecla no permitida en este nivel:" << event->key();
+        return;
+    }
+
+    // AGREGAR TECLA PARA MOVIMIENTO CONTINUO
     if (event->key() == Qt::Key_A || event->key() == Qt::Key_D ||
         event->key() == Qt::Key_W || event->key() == Qt::Key_S) {
         goku->agregarTeclaPresionada(event->key());
     }
 
-    // Procesar acciones específicas
-    switch (event->key()) {
-    case Qt::Key_C:
-        if (tipo == TipoNivel::DOS) {
-            if (goku->trayectoriaEstaVisible())
-                goku->limpiarTrayectoria();
-            else
-                goku->mostrarTrayectoria(true);
-        }
-        return;
-    case Qt::Key_Q:
-        if (tipo == TipoNivel::DOS) {
-            goku->disminuirAnguloTiro();
-            goku->mostrarTrayectoria(true);
-        }
-        return;
-
-    case Qt::Key_E:
-        if (tipo == TipoNivel::DOS) {
-            goku->aumentarAnguloTiro();
-            goku->mostrarTrayectoria(true);
-        }
+    // Procesar acciones específicas por nivel
+    switch (tipo) {
+    case TipoNivel::UNO:
+        procesarTeclasNivelUno(event->key(), goku);
         break;
-
-    case Qt::Key_A:
-        if (tipo == TipoNivel::TRES && goku->estaNadando()) {
-            goku->nadar(-5.0f, 0.0f);
-        } else if (!goku->estaSaltando()) {
-            float velocidad = goku->getVelocidad();
-            float factorVelocidad = goku->getCaparazon().getFactorVelocidad();
-            goku->setX(goku->x() - velocidad * factorVelocidad);
-        }
+    case TipoNivel::DOS:
+        procesarTeclasNivelDos(event->key(), goku);
         break;
-
-    case Qt::Key_D:
-        if (tipo == TipoNivel::TRES && goku->estaNadando()) {
-            goku->nadar(5.0f, 0.0f);
-        } else if (!goku->estaSaltando()) {
-            float velocidad = goku->getVelocidad();
-            float factorVelocidad = goku->getCaparazon().getFactorVelocidad();
-            goku->setX(goku->x() + velocidad * factorVelocidad);
-        }
+    case TipoNivel::TRES:
+        procesarTeclasNivelTres(event->key(), goku);
         break;
+    }
 
-    case Qt::Key_W:
-        if (tipo == TipoNivel::TRES && goku->estaNadando()) {
-            goku->nadar(0.0f, -3.0f);
-        }else if (tipo == TipoNivel::DOS) {
-            goku->aumentarFuerzaTiro();
-            goku->mostrarTrayectoria(true);
-        }
-        break;
-
-    case Qt::Key_S:
-        if (tipo == TipoNivel::TRES && goku->estaNadando()) {
-            goku->nadar(0.0f, 5.0f);
-        }else if (tipo == TipoNivel::DOS) {
-            goku->disminuirFuerzaTiro();
-            goku->mostrarTrayectoria(true);
-        }
-        break;
-
-    case Qt::Key_Z:
-        goku->iniciarAnimacionLanzamiento();
-        goku->disparar(false);
-        break;
-
-    case Qt::Key_X:
-        goku->iniciarAnimacionLanzamiento();
-        goku->disparar(true);
-        break;
-
-    case Qt::Key_Space:
-        if (!goku->estaSaltando() && !goku->estaNadando()) {
-            goku->saltar();
-        }
-        break;
-
-    case Qt::Key_Escape:
+    // Tecla común para todos los niveles
+    if (event->key() == Qt::Key_Escape) {
         volverAlMenu();
-        break;
     }
 }
 
@@ -307,10 +270,168 @@ void Juego::keyReleaseEvent(QKeyEvent* event) {
     Goku* goku = dynamic_cast<Goku*>(nivelActual->getPersonaje());
     if (!goku) return;
 
-    // REMOVER TECLA
+    TipoNivel tipo = nivelActual->getTipo();
+
+    // Verificar si la tecla está permitida en este nivel
+    if (!esTeclaPermitidaEnNivel(event->key(), tipo)) {
+        return;
+    }
+
+    // REMOVER TECLA PARA MOVIMIENTO CONTINUO
     if (event->key() == Qt::Key_A || event->key() == Qt::Key_D ||
         event->key() == Qt::Key_W || event->key() == Qt::Key_S) {
         goku->removerTeclaPresionada(event->key());
+    }
+}
+
+bool Juego::esTeclaPermitidaEnNivel(int key, TipoNivel tipo) {
+    switch (tipo) {
+    case TipoNivel::UNO:
+        return (key == Qt::Key_A || key == Qt::Key_D || key == Qt::Key_Space || key == Qt::Key_Escape);
+
+    case TipoNivel::DOS:
+        return (key == Qt::Key_A || key == Qt::Key_D || key == Qt::Key_Z ||
+                key == Qt::Key_X || key == Qt::Key_W || key == Qt::Key_S ||
+                key == Qt::Key_Space || key == Qt::Key_E || key == Qt::Key_Q ||
+                key == Qt::Key_C || key == Qt::Key_Escape);
+
+    case TipoNivel::TRES:
+        return (key == Qt::Key_A || key == Qt::Key_D || key == Qt::Key_W ||
+                key == Qt::Key_S || key == Qt::Key_Escape);
+
+    default:
+        return false;
+    }
+}
+
+void Juego::procesarTeclasNivelUno(int key, Goku* goku) {
+    switch (key) {
+    case Qt::Key_A:
+        if (!goku->estaSaltando()) {
+            float velocidad = goku->getVelocidad();
+            float factorVelocidad = goku->getCaparazon().getFactorVelocidad();
+            goku->setX(goku->x() - velocidad * factorVelocidad);
+        }
+        break;
+
+    case Qt::Key_D:
+        if (!goku->estaSaltando()) {
+            float velocidad = goku->getVelocidad();
+            float factorVelocidad = goku->getCaparazon().getFactorVelocidad();
+            goku->setX(goku->x() + velocidad * factorVelocidad);
+        }
+        break;
+
+    case Qt::Key_Space:
+        if (!goku->estaSaltando() && !goku->estaNadando()) {
+            AudioManager::instancia()->reproducirSonido(AudioManager::SALTO);
+            goku->saltar();
+        }
+        break;
+    }
+}
+
+void Juego::procesarTeclasNivelDos(int key, Goku* goku) {
+    switch (key) {
+    case Qt::Key_A:
+        if (!goku->estaSaltando()) {
+            float velocidad = goku->getVelocidad();
+            float factorVelocidad = goku->getCaparazon().getFactorVelocidad();
+            goku->setX(goku->x() - velocidad * factorVelocidad);
+        }
+        break;
+
+    case Qt::Key_D:
+        if (!goku->estaSaltando()) {
+            float velocidad = goku->getVelocidad();
+            float factorVelocidad = goku->getCaparazon().getFactorVelocidad();
+            goku->setX(goku->x() + velocidad * factorVelocidad);
+        }
+        break;
+
+    case Qt::Key_W:
+        goku->aumentarFuerzaTiro();
+        goku->mostrarTrayectoria(true);
+        break;
+
+    case Qt::Key_S:
+        goku->disminuirFuerzaTiro();
+        goku->mostrarTrayectoria(true);
+        break;
+
+    case Qt::Key_Q:
+        goku->disminuirAnguloTiro();
+        goku->mostrarTrayectoria(true);
+        break;
+
+    case Qt::Key_E:
+        goku->aumentarAnguloTiro();
+        goku->mostrarTrayectoria(true);
+        break;
+
+    case Qt::Key_C:
+        // Toggle de trayectoria
+        goku->toggleTrayectoria(true);
+        break;
+
+    case Qt::Key_Z:
+        AudioManager::instancia()->reproducirSonido(AudioManager::DISPARO);
+        goku->iniciarAnimacionLanzamiento();
+        goku->disparar(false);
+        break;
+
+    case Qt::Key_X:
+        AudioManager::instancia()->reproducirSonido(AudioManager::DISPARO);
+        goku->iniciarAnimacionLanzamiento();
+        goku->disparar(true);
+        break;
+
+    case Qt::Key_Space:
+        if (!goku->estaSaltando() && !goku->estaNadando()) {
+            AudioManager::instancia()->reproducirSonido(AudioManager::SALTO);
+            goku->saltar();
+        }
+        break;
+    }
+}
+
+void Juego::procesarTeclasNivelTres(int key, Goku* goku) {
+    switch (key) {
+    case Qt::Key_A:
+        if (goku->estaNadando()) {
+            AudioManager::instancia()->reproducirSonido(AudioManager::NADO, 0.5f);
+            goku->nadar(-5.0f, 0.0f);
+        } else if (!goku->estaSaltando()) {
+            float velocidad = goku->getVelocidad();
+            float factorVelocidad = goku->getCaparazon().getFactorVelocidad();
+            goku->setX(goku->x() - velocidad * factorVelocidad);
+        }
+        break;
+
+    case Qt::Key_D:
+        if (goku->estaNadando()) {
+            AudioManager::instancia()->reproducirSonido(AudioManager::NADO, 0.5f);
+            goku->nadar(5.0f, 0.0f);
+        } else if (!goku->estaSaltando()) {
+            float velocidad = goku->getVelocidad();
+            float factorVelocidad = goku->getCaparazon().getFactorVelocidad();
+            goku->setX(goku->x() + velocidad * factorVelocidad);
+        }
+        break;
+
+    case Qt::Key_W:
+        if (goku->estaNadando()) {
+            AudioManager::instancia()->reproducirSonido(AudioManager::NADO, 0.5f);
+            goku->nadar(0.0f, -3.0f);
+        }
+        break;
+
+    case Qt::Key_S:
+        if (goku->estaNadando()) {
+            AudioManager::instancia()->reproducirSonido(AudioManager::NADO, 0.5f);
+            goku->nadar(0.0f, 5.0f);
+        }
+        break;
     }
 }
 
@@ -347,14 +468,29 @@ void Juego::actualizarPanelInfo()
 // ============================================
 
 void Juego::mostrarVentanaEmergente(VentanaEmergente::TipoMensaje tipo, int siguienteNivel) {
+    // Reproducir sonido según el tipo de ventana
+    switch (tipo) {
+    case VentanaEmergente::NIVEL_COMPLETADO:
+        AudioManager::instancia()->reproducirSonido(AudioManager::NIVEL_COMPLETADO);
+        break;
+    case VentanaEmergente::GAME_OVER:
+        AudioManager::instancia()->reproducirSonido(AudioManager::GAME_OVER);
+        break;
+    case VentanaEmergente::JUEGO_COMPLETADO:
+        AudioManager::instancia()->reproducirSonido(AudioManager::JUEGO_TERMINADO);
+        break;
+    }
+
     VentanaEmergente *ventana = new VentanaEmergente(tipo, this);
 
     connect(ventana, &VentanaEmergente::volverAlMenu, this, &Juego::volverAlMenu);
     connect(ventana, &VentanaEmergente::reintentarNivel, [=]() {
+        AudioManager::instancia()->reproducirSonido(AudioManager::CLICK_MENU);
         setGameOver(false);
         cargarNivel(nivelActual->getTipo());
     });
     connect(ventana, &VentanaEmergente::siguienteNivel, [=]() {
+        AudioManager::instancia()->reproducirSonido(AudioManager::CLICK_MENU);
         cargarNivel(static_cast<TipoNivel>(siguienteNivel));
     });
 
