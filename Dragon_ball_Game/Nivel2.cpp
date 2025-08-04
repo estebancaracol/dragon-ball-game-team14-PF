@@ -213,9 +213,8 @@ bool Nivel2::verificarObjetivoCompleto() {
         return false;
     }
 
-    // Obtener el puntero al juego para verificar si está en modo historia
-    Juego* juego = dynamic_cast<Juego*>(parent());
-    bool esModoHistoria = (juego && juego->getModoHistoria());
+    // Usar el puntero a 'juego' para verificar si está en modo historia
+    bool esModoHistoria = (this->juego && this->juego->getModoHistoria());
 
     int esferasRecolectadas = goku->getEsferasRecolectadas();
     int esferasRequeridas = esModoHistoria ? 4 : 2;
@@ -326,7 +325,12 @@ void Nivel2::actualizarFisica()
         if (!emitidoObjetivoCumplido) {
             emitidoObjetivoCumplido = true;
             qDebug() << "[Nivel2] Emitiendo señal objetivoCumplido() desde actualizarFisica()";
+
+            // Detener el timer de física para evitar que se ejecute de nuevo en un objeto eliminado
+            timerFisica->stop();
+
             emit objetivoCumplido();
+            return; // Salir del método para evitar cualquier acceso posterior a miembros
         }
     }
 
